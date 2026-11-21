@@ -6,6 +6,9 @@ credentials, browser cookies, or private account access.
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
+import secrets
 import os
 import re
 import shutil
@@ -21,7 +24,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -316,6 +319,40 @@ def run_download(job: Job) -> None:
             job.status = "error"
             job.error = readable_error(exc)
             job.message = "Le traitement a échoué."
+
+
+@app.middleware("http")
+async def test_access_gate(request: Request, call_next):
+    """Protect a hosted test instance with Basic Auth; never store its secret in Git.
+
+    Local development remains open unless VYRA_REQUIRE_AUTH=1 is explicitly set.
+    The health endpoint is public so hosting probes can detect a healthy instance.
+    """
+    if os.getenv("VYRA_REQUIRE_AUTH") != "1" or request.url.path == "/api/health":
+        return await call_next(request)
+
+    password = os.getenv("VYRA_ACCESS_PASSWORD", "")
+    if not password:
+        return JSONResponse(status_code=503, content={"detail": "Accès de test non configuré."})
+
+    expected_user = os.getenv("VYRA_ACCESS_USER", "testeur")
+    authorization = request.headers.get("Authorization", "")
+    accepted = False
+    if authorization.startswith("Basic ") and len(authorization) < 4096:
+        try:
+            raw = base64.b64decode(authorization[6:], validate=True).decode("utf-8")
+            if ":" in raw:
+                user, provided = raw.split(":", 1)
+                accepted = secrets.compare_digest(user, expected_user) and secrets.compare_digest(provided, password)
+        except (ValueError, UnicodeError, binascii.Error):
+            pass
+    if not accepted:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Authentification requise pour la version de test."},
+            headers={"WWW-Authenticate": 'Basic realm="VYRA - Acces de test", charset="UTF-8"'},
+        )
+    return await call_next(request)
 
 
 @app.get("/api/health")

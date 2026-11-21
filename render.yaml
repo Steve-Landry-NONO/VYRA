@@ -1,0 +1,22 @@
+# Déploiement VYRA V2 pour des essais privés uniquement.
+# Le secret VYRA_ACCESS_PASSWORD est fourni dans Render, jamais dans Git.
+services:
+  - type: web
+    name: vyra-tests
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: VYRA_REQUIRE_AUTH
+        value: "1"
+      - key: VYRA_ACCESS_USER
+        value: "testeur"
+      - key: VYRA_ACCESS_PASSWORD
+        sync: false
+      - key: VYRA_MAX_DURATION_SECONDS
+        value: "600"
+      - key: VYRA_MAX_FILE_BYTES
+        value: "104857600"

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr" data-theme="neutral">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f7">
+  <meta name="description" content="VYRA : une interface qui s'adapte à YouTube, Instagram, TikTok et Snapchat pour vos vidéos publiques au format MP4 ou MP3.">
+  <title>VYRA — Chaque vidéo, dans son univers.</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <!-- The pictograms are simplified, original interface illustrations, not affiliation marks. -->
+  <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <symbol id="icon-youtube" viewBox="0 0 48 48"><rect x="3" y="11" width="42" height="26" rx="9" fill="#ff0033"/><path d="M20.5 17.5 32 24l-11.5 6.5z" fill="#fff"/></symbol>
+    <symbol id="icon-instagram" viewBox="0 0 48 48"><defs><linearGradient id="ig-gradient" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#ffbd4a"/><stop offset=".38" stop-color="#f63767"/><stop offset=".7" stop-color="#c32d98"/><stop offset="1" stop-color="#6d4bdb"/></linearGradient></defs><rect x="3" y="3" width="42" height="42" rx="12" fill="#c32d98"/><rect x="12" y="12" width="24" height="24" rx="7" stroke="#fff" stroke-width="3.2" fill="none"/><circle cx="24" cy="24" r="6" stroke="#fff" stroke-width="3.1" fill="none"/><circle cx="32.4" cy="15.6" r="2" fill="#fff"/></symbol>
+    <symbol id="icon-tiktok" viewBox="0 0 48 48"><rect x="2" y="2" width="44" height="44" rx="12" fill="#101015"/><path d="M29 9v19.5a8.6 8.6 0 1 1-8.6-8.6" fill="none" stroke="#25f4ee" stroke-width="5" stroke-linecap="round" transform="translate(-2 2)"/><path d="M29 9v19.5a8.6 8.6 0 1 1-8.6-8.6M29 12c1.5 5.5 5.5 8.5 10 8.5" fill="none" stroke="#fe2c55" stroke-width="5" stroke-linecap="round" transform="translate(2 -1)"/><path d="M29 9v19.5a8.6 8.6 0 1 1-8.6-8.6M29 12c1.5 5.5 5.5 8.5 10 8.5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></symbol>
+    <symbol id="icon-snapchat" viewBox="0 0 48 48"><rect x="2" y="2" width="44" height="44" rx="12" fill="#fffc00"/><path d="M24 10c-6 0-8 4.2-8 9.3l.15 4.6c-1.6 1.5-3.9 2.2-5.6 2.5-1.8.4-1.5 2 .25 2.6 2.2.8 4.2 2.9 4.8 4.9.2.9-1 1.3 1.2 1.6 2.4.4 3.2 1.1 4.5 2.1 1 .8 2.2.9 3.1.1.9.8 2.1.7 3.1-.1 1.3-1 2.1-1.7 4.5-2.1 2.2-.3 1-1.1 1.2-1.6.6-2 2.6-4.1 4.8-4.9 1.75-.6 2.05-2.2.25-2.6-1.7-.3-4-1-5.6-2.5l.15-4.6C32 14.2 30 10 24 10Z" fill="#fff" stroke="#111" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24"><path d="M10 13.5a5 5 0 0 0 7.1 0l2.5-2.5a5 5 0 0 0-7.1-7.1L11 5.4M14 10.5a5 5 0 0 0-7.1 0L4.4 13a5 5 0 1 0 7.1 7.1L13 18.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 17v3h16v-3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+  <div class="background-orb orb-one" aria-hidden="true"></div>
+  <div class="background-orb orb-two" aria-hidden="true"></div>
+
+  <header class="site-header container">
+    <a href="/" class="brand" aria-label="VYRA — Retour à l'accueil"><span class="brand-mark"><svg viewBox="0 0 24 24"><use href="#icon-download"/></svg></span><span>vyra<span class="brand-period">.</span></span></a>
+    <nav class="navigation" aria-label="Navigation"><a href="#downloader">Télécharger</a><a href="#how">Comment ça marche</a></nav>
+    <div class="header-status"><span class="online-dot"></span><span>4 plateformes · 1 seul lien</span></div>
+  </header>
+
+  <main>
+    <section class="hero container" aria-labelledby="main-title">
+      <div class="hero-intro">
+        <p class="overline"><span class="overline-line"></span> UNE EXPÉRIENCE QUI CHANGE AVEC VOUS <span class="overline-line"></span></p>
+        <h1 id="main-title">Chaque vidéo.<br><span class="hero-title-accent" id="hero-title-accent">Dans son univers.</span></h1>
+        <p class="hero-subtitle" id="hero-subtitle">Choisissez votre réseau préféré. VYRA prend ses couleurs et vous accompagne jusqu'au bon format.</p>
+      </div>
+
+      <div class="platform-head"><div><span class="eyebrow">01 — CHOISIR UNE PLATEFORME</span><h2>Où avez-vous vu cette vidéo ?</h2></div><span class="swipe-hint">Un clic, et le décor change <span aria-hidden="true">↘</span></span></div>
+      <div class="platforms" role="group" aria-label="Choisir la plateforme de la vidéo">
+        <button class="platform" type="button" data-platform="youtube" aria-pressed="false"><span class="platform-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#icon-youtube"/></svg></span><span class="platform-copy"><strong>YouTube</strong><small>Vidéos & Shorts</small></span><span class="platform-arrow" aria-hidden="true">↗</span></button>
+        <button class="platform" type="button" data-platform="instagram" aria-pressed="false"><span class="platform-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#icon-instagram"/></svg></span><span class="platform-copy"><strong>Instagram</strong><small>Reels & vidéos</small></span><span class="platform-arrow" aria-hidden="true">↗</span></button>
+        <button class="platform" type="button" data-platform="tiktok" aria-pressed="false"><span class="platform-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#icon-tiktok"/></svg></span><span class="platform-copy"><strong>TikTok</strong><small>Vidéos publiques</small></span><span class="platform-arrow" aria-hidden="true">↗</span></button>
+        <button class="platform" type="button" data-platform="snapchat" aria-pressed="false"><span class="platform-symbol"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#icon-snapchat"/></svg></span><span class="platform-copy"><strong>Snapchat <em>BÊTA</em></strong><small>Stories publiques*</small></span><span class="platform-arrow" aria-hidden="true">↗</span></button>
+      </div>
+
+      <section class="workspace" id="downloader" aria-label="Outil de téléchargement">
+        <div class="workspace-visual" aria-hidden="true">
+          <div class="visual-grid"></div>
+          <div class="visual-orbit visual-orbit-one"></div><div class="visual-orbit visual-orbit-two"></div>
+          <div class="visual-topline"><span class="visual-live-dot"></span><span id="visual-mode">MODE VYRA</span><span class="visual-number">01 / 04</span></div>
+          <div class="visual-center"><span class="visual-glow"></span><div class="spotlight-logo"><svg id="spotlight-svg" viewBox="0 0 48 48"><use id="spotlight-use" href="#icon-youtube"/></svg><span id="neutral-visual-glyph" class="neutral-visual-glyph">↓</span></div><span id="visual-wordmark">YOUR MEDIA.</span></div>
+          <div class="visual-footer"><div class="visual-message"><strong id="visual-headline">Un lien. Mille possibilités.</strong><small id="visual-description">Sélectionnez un réseau pour personnaliser votre espace.</small></div><span class="floating-format">MP4 <span>↗</span> MP3</span></div>
+        </div>
+        <div class="tool-panel">
+          <div class="tool-heading"><span class="eyebrow">02 — COLLER LE LIEN</span><span class="tool-badge" id="tool-badge"><span class="mini-dot"></span> TOUS LES RÉSEAUX</span></div>
+          <h2 id="tool-title">Votre lien, c'est tout.</h2>
+          <p id="tool-description">Copiez l'URL d'une vidéo publique. Nous nous occupons de repérer le contenu et les formats disponibles.</p>
+          <form id="inspect-form" novalidate>
+            <label for="url-input" class="input-label">Lien de la vidéo</label>
+            <div class="url-box"><svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-link"/></svg><input id="url-input" type="url" inputmode="url" spellcheck="false" autocomplete="url" placeholder="https://youtube.com/watch?v=..." aria-describedby="detected-message" required><button class="paste-btn" id="paste-btn" type="button" title="Coller depuis le presse-papiers"><span class="paste-icon">▤</span><span>Coller</span></button></div>
+            <p class="detected-message" id="detected-message" aria-live="polite">Un lien YouTube, Instagram, TikTok ou Snapchat public.</p>
+            <button id="analyze-btn" class="primary-button" type="submit"><span id="analyze-btn-text">Analyser le lien</span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-arrow"/></svg></button>
+          </form>
+          <p class="message" id="global-message" role="alert" hidden></p>
+          <div class="tool-footnote"><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> Sans inscription</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> MP4 & MP3</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> Qualités réelles</span></div>
+        </div>
+      </section>
+
+      <section class="result-card" id="result-card" aria-label="Vidéo détectée" hidden>
+        <div class="result-header"><span class="result-status"><span class="mini-dot"></span> VIDÉO DÉTECTÉE</span><span id="result-platform" class="result-platform">YouTube</span></div>
+        <div class="result-body"><div class="thumbnail-wrap"><img id="video-thumbnail" alt="Miniature de la vidéo" loading="lazy"><div class="thumbnail-fallback" id="thumbnail-fallback">▶</div><span id="video-duration" class="video-duration"></span></div><div class="video-details"><span class="eyebrow">VOTRE CONTENU</span><h2 id="video-title"></h2><p id="video-creator"></p><div class="video-tags"><span>✓ Lien analysé</span><span id="quality-count"></span></div></div></div>
+        <div class="format-section"><div class="section-heading"><div><span class="eyebrow">03 — CHOISIR LE FORMAT</span><h3>Prêt à récupérer votre fichier ?</h3></div><p>Sélectionnez le format et la qualité.</p></div><div class="format-tabs" role="group" aria-label="Format de téléchargement"><button class="format-tab active" type="button" data-format="mp4" aria-pressed="true"><span class="tab-icon">▣</span><span>Vidéo <strong>MP4</strong></span></button><button class="format-tab" type="button" data-format="mp3" aria-pressed="false"><span class="tab-icon">♫</span><span>Audio <strong>MP3</strong></span></button></div><div class="quality-heading"><span id="quality-label">Résolution vidéo</span><span id="quality-caption">Selon la vidéo d’origine</span></div><div class="quality-options" id="quality-options" role="group" aria-label="Qualité"></div><p class="format-note" id="format-note">La qualité dépend de la vidéo d’origine.</p><button id="download-btn" class="primary-button download-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-download"/></svg> Préparer mon téléchargement <span class="button-arrow">→</span></button></div>
+      </section>
+      <section class="progress-card" id="progress-card" hidden aria-live="polite"><div class="progress-icon">↓</div><div class="progress-content"><h3 id="progress-title">Préparation du fichier</h3><p id="progress-description">Connexion à la plateforme…</p><div class="progress-track"><div id="progress-bar" class="progress-bar" style="width:0%"></div></div><span id="progress-percent" class="progress-percent">0 %</span><a id="file-link" class="ready-button" href="#" download hidden>↓ Télécharger mon fichier</a></div></section>
+    </section>
+
+    <section class="how-section container" id="how"><div class="section-topline"><span class="eyebrow">SIMPLE, DU DÉBUT À LA FIN</span><span class="simple-label">LE PROCESSUS / 03 ÉTAPES</span></div><div class="how-layout"><div class="how-head"><h2>Tout commence<br>par <em>un lien.</em></h2><p>Pas besoin de chercher un bouton caché. Une expérience pensée pour aller à l'essentiel.</p></div><div class="steps-grid"><article class="info-card"><span class="card-number">01</span><div><h3>Choisissez votre univers</h3><p>Vous sélectionnez un réseau, VYRA adopte instantanément ses couleurs.</p></div><span class="info-arrow">↗</span></article><article class="info-card"><span class="card-number">02</span><div><h3>Collez votre URL</h3><p>Le site reconnaît aussi automatiquement le réseau contenu dans votre lien.</p></div><span class="info-arrow">↗</span></article><article class="info-card"><span class="card-number">03</span><div><h3>MP4 ou MP3, à vous de choisir</h3><p>Choisissez une qualité réellement disponible, puis préparez votre fichier.</p></div><span class="info-arrow">↗</span></article></div></div></section>
+  </main>
+  <footer class="site-footer container"><div class="footer-line"><div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24"><use href="#icon-download"/></svg></span><span>vyra<span class="brand-period">.</span></span></div><span>Vos vidéos. Votre univers.</span></div><p>* Snapchat est expérimental : les stories privées ne sont pas prises en charge. Utilisez VYRA uniquement pour des contenus publics que vous êtes autorisé à enregistrer. Les plateformes peuvent restreindre l'extraction.</p><small>© 2026 VYRA · Projet indépendant, sans affiliation avec YouTube, Instagram, TikTok ou Snapchat.</small></footer>
+  <div class="sr-only" id="theme-announcement" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

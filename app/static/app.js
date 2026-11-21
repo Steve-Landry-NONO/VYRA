@@ -358,3 +358,40 @@ downloadButton.addEventListener('click', async () => {
     setBusy(downloadButton, false);
   }
 });
+
+
+// La conversion des fichiers personnels ne fait aucune requête vers YouTube.
+$('upload-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  clearError();
+  const selected = $('local-file').files?.[0];
+  if (!selected) return showError('Sélectionne d’abord un fichier vidéo ou audio.');
+  if (selected.size > 104857600) return showError('Ce fichier dépasse les 100 Mio autorisés.');
+  if (!$('upload-rights').checked) return showError('Tu dois confirmer que tu es autorisé à traiter ce fichier.');
+  const button = $('upload-btn');
+  setBusy(button, true);
+  progressCard.hidden = false;
+  $('file-link').hidden = true;
+  $('progress-title').textContent = 'Import du fichier';
+  $('progress-description').textContent = 'Transfert sur VYRA…';
+  $('progress-bar').style.width = '10%';
+  $('progress-percent').textContent = '10 %';
+  progressCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+  const form = new FormData();
+  form.append('file', selected);
+  form.append('format', $('upload-format').value);
+  form.append('rights_confirmed', 'true');
+  try {
+    const response = await fetch('/api/upload', {method:'POST',body:form});
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Import impossible.');
+    pollingJob = data.job_id;
+    $('progress-title').textContent = 'Conversion du fichier';
+    poll(data.job_id);
+  } catch (error) {
+    progressCard.hidden = true;
+    showError(error.message || 'Une erreur est survenue pendant l’import.');
+  } finally {
+    setBusy(button, false);
+  }
+});

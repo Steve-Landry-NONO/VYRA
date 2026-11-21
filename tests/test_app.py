@@ -133,3 +133,24 @@ def test_home_and_health():
     assert client.get("/").status_code == 200
     assert 'Vos vidéos' in client.get("/").text
     assert client.get("/api/health").json()["ok"]
+
+
+def test_hosted_instance_rejects_without_password_configuration(monkeypatch):
+    monkeypatch.setenv("VYRA_REQUIRE_AUTH", "1")
+    monkeypatch.delenv("VYRA_ACCESS_PASSWORD", raising=False)
+    assert client.get("/").status_code == 503
+    assert client.get("/api/health").status_code == 200
+
+
+def test_hosted_instance_requires_correct_basic_auth(monkeypatch):
+    import base64
+    monkeypatch.setenv("VYRA_REQUIRE_AUTH", "1")
+    monkeypatch.setenv("VYRA_ACCESS_USER", "testeur")
+    monkeypatch.setenv("VYRA_ACCESS_PASSWORD", "mot-de-passe-test")
+    assert client.get("/").status_code == 401
+    assert client.get("/").headers.get("WWW-Authenticate", "").startswith("Basic ")
+    invalid = base64.b64encode(b"testeur:errone").decode()
+    assert client.get("/api/jobs/aucun", headers={"Authorization": f"Basic {invalid}"}).status_code == 401
+    accepted = base64.b64encode(b"testeur:mot-de-passe-test").decode()
+    assert client.get("/", headers={"Authorization": f"Basic {accepted}"}).status_code == 200
+    assert client.get("/api/jobs/aucun", headers={"Authorization": f"Basic {accepted}"}).status_code == 404

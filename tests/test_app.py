@@ -154,3 +154,34 @@ def test_hosted_instance_requires_correct_basic_auth(monkeypatch):
     accepted = base64.b64encode(b"testeur:mot-de-passe-test").decode()
     assert client.get("/", headers={"Authorization": f"Basic {accepted}"}).status_code == 200
     assert client.get("/api/jobs/aucun", headers={"Authorization": f"Basic {accepted}"}).status_code == 404
+
+
+@pytest.mark.parametrize(("error", "category"), [
+    ("ERROR: Sign in to confirm you're not a bot", "youtube_bot_check"),
+    ("ERROR: This is a private video. Sign in", "login_required"),
+    ("ERROR: HTTP Error 403: Forbidden", "access_forbidden"),
+    ("ERROR: HTTP Error 429: Too Many Requests", "rate_limited"),
+    ("ERROR: No supported JavaScript runtime could be found", "youtube_javascript"),
+    ("ERROR: Unsupported URL", "unsupported_url"),
+])
+def test_failure_categories(error, category):
+    assert main.failure_category(RuntimeError(error)) == category
+
+
+def test_youtube_bot_check_is_not_mislabeled_as_private(monkeypatch, caplog):
+    def fail(url):
+        raise RuntimeError(f"https://youtube.com/watch?v=SECRET_TOKEN: Sign in to confirm you're not a bot")
+    monkeypatch.setattr(main, "metadata_from_url", fail)
+    with caplog.at_level("WARNING", logger="vyra.diagnostics"):
+        response = client.post("/api/inspect", json={"url": GOOD_URL})
+    assert response.status_code == 422
+    assert "anti-robot" in response.json()["detail"]
+    assert "SECRET_TOKEN" not in caplog.text
+    assert "youtube_bot_check" in caplog.text
+
+
+def test_optional_diagnostic_requires_configuration(monkeypatch):
+    monkeypatch.delenv("VYRA_DIAGNOSTIC_URL", raising=False)
+    with monkeypatch.context() as m:
+        m.setattr(main.executor, "submit", lambda *args: pytest.fail("Should not run"))
+        main.start_optional_diagnostic()

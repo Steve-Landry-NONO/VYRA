@@ -185,3 +185,59 @@ def test_optional_diagnostic_requires_configuration(monkeypatch):
     with monkeypatch.context() as m:
         m.setattr(main.executor, "submit", lambda *args: pytest.fail("Should not run"))
         main.start_optional_diagnostic()
+
+
+
+def test_upload_requires_authorization():
+    response = client.post('/api/upload', data={'format': 'mp3'},
+                           files={'file': ('video.mp4', b'example', 'video/mp4')})
+    assert response.status_code == 422
+    assert not main.jobs
+
+
+def test_upload_rejects_invalid_extension_and_audio_to_video():
+    invalid = client.post('/api/upload', data={'format': 'mp3', 'rights_confirmed': 'true'},
+                          files={'file': ('bad.exe', b'not-media', 'application/octet-stream')})
+    assert invalid.status_code == 422
+    audio = client.post('/api/upload', data={'format': 'mp4', 'rights_confirmed': 'true'},
+                        files={'file': ('audio.mp3', b'not-media', 'audio/mpeg')})
+    assert audio.status_code == 422
+    assert not main.jobs
+
+
+def test_upload_limits_size(monkeypatch):
+    monkeypatch.setattr(main, 'MAX_FILE_BYTES', 20)
+    large = client.post('/api/upload', data={'format': 'mp3', 'rights_confirmed': 'true'},
+                        files={'file': ('audio.mp3', b'x' * 100, 'audio/mpeg')})
+    assert large.status_code == 413
+    assert not list(main.STORAGE_DIR.rglob('uploaded*'))
+
+
+def test_real_ffmpeg_upload_mp3_and_mp4(tmp_path):
+    import shutil
+    import subprocess
+    if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
+        pytest.skip('FFmpeg/FFprobe absents du runner')
+    source = tmp_path / 'demo.mp4'
+    subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i',
+                    'color=c=blue:s=320x240:d=1', '-f', 'lavfi', '-i',
+                    'sine=frequency=440:duration=1', '-c:v', 'libx264', '-preset',
+                    'ultrafast', '-c:a', 'aac', '-shortest', str(source)],
+                   check=True, timeout=15)
+    for fmt in ['mp3', 'mp4']:
+        with source.open('rb') as data:
+            response = client.post('/api/upload', data={'format': fmt, 'rights_confirmed': 'true'},
+                                   files={'file': ('mon-video.mp4', data, 'video/mp4')})
+        assert response.status_code == 202, response.text
+        job_id = response.json()['job_id']
+        for _ in range(100):
+            state = client.get(f'/api/jobs/{job_id}').json()
+            if state['status'] in ('ready', 'error'):
+                break
+            time.sleep(0.1)
+        assert state['status'] == 'ready', state
+        final = client.get(state['download_url'])
+        assert final.status_code == 200
+        assert len(final.content) > 200
+        if fmt == 'mp3':
+            assert final.content.startswith((b'ID3', b'\xff\xfb', b'\xff\xf3'))

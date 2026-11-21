@@ -257,3 +257,14 @@ VYRA V2 comporte désormais un **Blueprint Render prêt à configurer** (`render
 ➡️ **[Guide complet : déploiement Render, sécurité, limites gratuites et recette avec de vraies URL](docs/DEPLOIEMENT_RENDER.md)**.
 
 Pour valider en local sans hébergement : `docker compose up --build`, puis `http://localhost:8080`. L’instance de test Render est volontairement limitée à **100 Mio et 10 minutes par contenu**.
+
+
+## V2.1 — Conversion à partir d’un fichier déjà possédé
+
+L’instance de recette permet désormais d’**importer une copie autorisée** d’un média depuis le navigateur pour l’exporter en MP3 (192 kb/s) ou MP4 avec FFmpeg. Ce parcours ne contacte aucune plateforme et ne dépend pas de la disponibilité de YouTube, Instagram ou TikTok.
+
+Le formulaire accepte MP4, MOV, M4V, MKV, WebM, MP3, M4A, WAV et AAC. La recette Render autorise 100 Mio et 10 minutes maximum par fichier. L’instance reste protégée par HTTP Basic. Les fichiers temporaires expirent et sont perdus en cas de redémarrage ou de mise en veille du service Render gratuit.
+
+**Important :** cette conversion ne transforme pas une URL YouTube bloquée en téléchargement fonctionnel. Pour une vidéo que vous avez vous-même publiée, YouTube Studio permet de télécharger une copie MP4 : https://support.google.com/youtube/answer/56100 . Pour les autres médias, respectez les droits et les possibilités offertes par leur plateforme.
+
+Le diagnostic réel du blocage YouTube sur Render est documenté dans [docs/INCIDENT_YOUTUBE_RENDER.md](docs/INCIDENT_YOUTUBE_RENDER.md). Ne pas transmettre de cookies personnels ni de mot de passe YouTube au service.

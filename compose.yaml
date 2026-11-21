@@ -1,0 +1,9 @@
+services:
+  vyra:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      VYRA_MAX_DURATION_SECONDS: "7200"
+      VYRA_MAX_FILE_BYTES: "524288000"
+    restart: unless-stopped

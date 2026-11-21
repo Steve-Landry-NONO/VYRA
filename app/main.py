@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
+import logging
 import secrets
 import os
 import re
@@ -17,6 +18,7 @@ import threading
 import time
 import uuid
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +31,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parent
+logger = logging.getLogger("vyra.diagnostics")
 STORAGE_DIR = Path(os.getenv("VYRA_STORAGE_DIR", str(Path(tempfile.gettempdir()) / "vyra-media")))
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 MAX_DURATION = int(os.getenv("VYRA_MAX_DURATION_SECONDS", "7200"))
@@ -37,7 +40,13 @@ INSPECT_TTL = 10 * 60
 FILE_TTL = 45 * 60
 MAX_PENDING = 6
 
-app = FastAPI(title="Vyra Downloader", version="2.0.0", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def application_lifespan(application: FastAPI):
+    start_optional_diagnostic()
+    yield
+
+
+app = FastAPI(title="Vyra Downloader", version="2.0.1", docs_url=None, redoc_url=None, lifespan=application_lifespan)
 executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="vyra-worker")
 state_lock = threading.RLock()
 rate_lock = threading.Lock()
@@ -148,19 +157,75 @@ def prune() -> None:
                 del jobs[key]
 
 
-def readable_error(exc: Exception) -> str:
+def failure_category(exc: Exception) -> str:
+    """Return a non-sensitive diagnostic category; never log a video URL or token."""
     message = str(exc).lower()
-    if "sign in" in message or "login" in message or "cookies" in message or "authentication" in message:
-        return "Cette vidéo nécessite une connexion ou n’est pas accessible publiquement."
+    if "confirm you're not a bot" in message or "confirm you’re not a bot" in message or "unusual traffic" in message:
+        return "youtube_bot_check"
+    if "no supported javascript runtime" in message or "n challenge solving failed" in message or "signature solving failed" in message:
+        return "youtube_javascript"
+    if "http error 429" in message or "too many requests" in message:
+        return "rate_limited"
+    if "http error 403" in message or "forbidden" in message:
+        return "access_forbidden"
+    if "login" in message or "sign in" in message or "cookies" in message or "authentication" in message or "members-only" in message:
+        return "login_required"
     if "private" in message or "not available" in message or "unavailable" in message:
-        return "Cette vidéo n’est pas accessible publiquement ou n’est plus disponible."
+        return "video_unavailable"
     if "unsupported url" in message or "no suitable extractor" in message:
-        return "Ce type de lien n’est pas encore pris en charge. Essaie un lien direct vers une vidéo publique."
+        return "unsupported_url"
     if "too long" in message or "duration" in message:
-        return "La vidéo dépasse la durée autorisée sur ce serveur."
+        return "duration_limit"
     if "file is larger" in message or "max-filesize" in message or "maximum file size" in message:
-        return "Le fichier dépasse la taille maximale autorisée sur ce serveur."
-    return "Impossible de traiter ce lien actuellement. Vérifie qu’il est public et réessaie."
+        return "size_limit"
+    if isinstance(exc, (asyncio.TimeoutError, TimeoutError)):
+        return "timeout"
+    return "unknown"
+
+
+def readable_error(exc: Exception) -> str:
+    """Keep frontend responses accurate without disclosing private extractor traces."""
+    category = failure_category(exc)
+    explanations = {
+        "youtube_bot_check": "YouTube demande une vérification anti-robot au serveur VYRA. La vidéo peut être publique : cela ne signifie pas que vous devez vous connecter. Essaie VYRA localement ou réessaie plus tard.",
+        "youtube_javascript": "YouTube nécessite un composant JavaScript supplémentaire. La configuration du moteur doit être vérifiée.",
+        "rate_limited": "La plateforme limite temporairement les requêtes du serveur. Réessaie plus tard.",
+        "access_forbidden": "La plateforme refuse l’accès depuis ce serveur (HTTP 403). Le contenu peut pourtant être public.",
+        "login_required": "Ce contenu nécessite une authentification que VYRA n’utilise pas.",
+        "video_unavailable": "Cette vidéo est privée, indisponible ou retirée de la plateforme.",
+        "unsupported_url": "Ce type de lien n’est pas encore pris en charge. Essaie un lien direct vers une vidéo publique.",
+        "duration_limit": "La vidéo dépasse la durée autorisée sur ce serveur.",
+        "size_limit": "Le fichier dépasse la taille maximale autorisée sur ce serveur.",
+        "timeout": "La plateforme n’a pas répondu à temps. Réessaie dans quelques instants.",
+    }
+    return explanations.get(category, "L’analyse de cette vidéo a échoué. Consulte le diagnostic du serveur ou essaie un autre lien public.")
+
+
+def record_failure(stage: str, platform: str, exc: Exception) -> None:
+    """Store only error category and exception class, never URLs, cookies or tokens."""
+    logger.warning("Echec VYRA etape=%s plateforme=%s categorie=%s type=%s",
+                   stage, platform, failure_category(exc), type(exc).__name__)
+
+
+def smoke_test_youtube() -> None:
+    """One-off diagnostic enabled only with a URL supplied in Render env vars."""
+    url = os.getenv("VYRA_DIAGNOSTIC_URL", "").strip()
+    if not url:
+        return
+    try:
+        if platform_from_url(url) != "YouTube":
+            logger.warning("Diagnostic YouTube ignoré : domaine non autorisé")
+            return
+        metadata_from_url(url)
+    except Exception as exc:
+        record_failure("diagnostic", "YouTube", exc)
+    else:
+        logger.info("Diagnostic YouTube : extraction des metadonnees reussie")
+
+
+def start_optional_diagnostic() -> None:
+    if os.getenv("VYRA_DIAGNOSTIC_URL", "").strip():
+        executor.submit(smoke_test_youtube)
 
 
 def metadata_from_url(url: str) -> dict[str, Any]:
@@ -314,6 +379,7 @@ def run_download(job: Job) -> None:
             job.progress = 100
             job.message = "Ton fichier est prêt !"
     except Exception as exc:
+        record_failure("download", job.platform, exc)
         shutil.rmtree(folder, ignore_errors=True)
         with state_lock:
             job.status = "error"
@@ -374,6 +440,7 @@ async def inspect(request: Request, payload: InspectRequest) -> dict[str, Any]:
     try:
         meta = await asyncio.wait_for(asyncio.to_thread(metadata_from_url, url), timeout=75)
     except Exception as exc:
+        record_failure("inspect", platform, exc)
         raise HTTPException(status_code=422, detail=readable_error(exc)) from exc
     inspection_id = uuid.uuid4().hex
     with state_lock:

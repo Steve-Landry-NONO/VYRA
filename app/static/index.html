@@ -65,6 +65,19 @@
             <button id="analyze-btn" class="primary-button" type="submit"><span id="analyze-btn-text">Analyser le lien</span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-arrow"/></svg></button>
           </form>
           <p class="message" id="global-message" role="alert" hidden></p>
+          <div class="local-upload">
+            <div class="local-upload-heading"><strong>La plateforme bloque le lien ?</strong><span>Alternative fiable</span></div>
+            <p>Si tu possèdes déjà une copie autorisée de la vidéo, importe-la pour la convertir en MP3 ou MP4. Cela ne passe pas par YouTube.</p>
+            <form id="upload-form" enctype="multipart/form-data">
+              <label for="local-file" class="input-label">Ton fichier vidéo ou audio</label>
+              <input id="local-file" name="file" type="file" accept=".mp4,.mov,.mkv,.m4v,.webm,.mp3,.m4a,.wav,.aac,video/*,audio/*" required>
+              <label for="upload-format" class="input-label">Format de sortie</label>
+              <select id="upload-format" name="format"><option value="mp3">MP3 — extraire l’audio</option><option value="mp4">MP4 — convertir la vidéo</option></select>
+              <label class="upload-confirm"><input id="upload-rights" type="checkbox" required> Je confirme être autorisé à utiliser ce fichier.</label>
+              <button type="submit" id="upload-btn" class="primary-button">Convertir mon fichier</button>
+              <span class="upload-note">100 Mio maximum · durée 10 min maximum · fichier temporaire, supprimé automatiquement</span>
+            </form>
+          </div>
           <div class="tool-footnote"><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> Sans inscription</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> MP4 & MP3</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-check"/></svg> Qualités réelles</span></div>
         </div>
       </section>

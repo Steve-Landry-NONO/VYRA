@@ -46,7 +46,7 @@ async def application_lifespan(application: FastAPI):
     yield
 
 
-app = FastAPI(title="Vyra Downloader", version="2.0.1", docs_url=None, redoc_url=None, lifespan=application_lifespan)
+app = FastAPI(title="Vyra Downloader", version="2.1.0", docs_url=None, redoc_url=None, lifespan=application_lifespan)
 executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="vyra-worker")
 state_lock = threading.RLock()
 rate_lock = threading.Lock()
@@ -506,5 +506,8 @@ def job_file(job_id: str):
             content_disposition_type="attachment",
         )
 
+
+from .upload_api import router as upload_router
+app.include_router(upload_router)
 
 app.mount("/", StaticFiles(directory=ROOT / "static", html=True), name="static")

@@ -9,4 +9,4 @@ COPY app/ ./app/
 RUN useradd -m -u 10001 vyra && mkdir -p /tmp/vyra-media && chown -R vyra:vyra /tmp/vyra-media /opt/vyra
 USER vyra
 EXPOSE 8080
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]

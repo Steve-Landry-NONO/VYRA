@@ -244,3 +244,16 @@ Licence **MIT** : voir [LICENSE](./LICENSE). VYRA est un **projet indépendant**
 *Conçu pour une expérience fluide, maintenable et honnête sur ses capacités.*
 
 </div>
+
+
+---
+
+## Déploiement cloud pour les tests réels
+
+VYRA V2 comporte désormais un **Blueprint Render prêt à configurer** (`render.yaml`) : service Docker FastAPI + yt-dlp + FFmpeg, port dynamique et **authentification HTTP Basic obligatoire pour les essais hébergés**. Le mot de passe est demandé à la création du service et ne doit jamais être versionné.
+
+> **État actuel : prêt à déployer, pas de déploiement public confirmé.** La création du fichier `render.yaml` ne lance aucun service à elle seule.
+
+➡️ **[Guide complet : déploiement Render, sécurité, limites gratuites et recette avec de vraies URL](docs/DEPLOIEMENT_RENDER.md)**.
+
+Pour valider en local sans hébergement : `docker compose up --build`, puis `http://localhost:8080`. L’instance de test Render est volontairement limitée à **100 Mio et 10 minutes par contenu**.
